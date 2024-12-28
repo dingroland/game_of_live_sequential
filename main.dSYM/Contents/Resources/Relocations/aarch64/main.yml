@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/daniel/FHTW/1_semester/ad_programming/game_of_life_sequential/game_of_live_sequential/main'
+relocations:     []
+...
