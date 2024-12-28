@@ -90,10 +90,24 @@ void saveFile(const string& outputFile, const vector<uint8_t>& board, int width,
 }
 
 
+void printBoard(const vector<uint8_t>& board, int width, int height) {
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            cout << (board[y * width + x] ? 'x' : '.');
+        }
+        cout << "\n";
+    }
+    cout << endl;
+}
+
+
 void runGame(vector<uint8_t>& board, int width, int height, int generations) {
     vector<uint8_t> next_board = board; // Temporary board to store the next state
 
     for (int gen = 0; gen < generations; ++gen) {
+        cout << "Generation " << gen << ":\n";
+        printBoard(board, width, height);
+
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
                 // Count alive neighbors
@@ -127,6 +141,8 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
         board.swap(next_board);
     }
 }
+
+
 
 
 int main(int argc, char** argv) {
