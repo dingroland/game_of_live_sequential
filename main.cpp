@@ -57,7 +57,7 @@ vector<uint8_t> loadFile(const string& inputFile, int& width, int& height) {
 
     // Read board state
     string line;
-    int row = -1;
+    int row = -1; // Start at -1 to skip the dimensions line
     while (getline(file, line)) {
         if (row >= height) break;
         for (int col = 0; col < width && col < line.size(); ++col) {
@@ -90,18 +90,43 @@ void saveFile(const string& outputFile, const vector<uint8_t>& board, int width,
 }
 
 
+void runGame(vector<uint8_t>& board, int width, int height, int generations) {
+    vector<uint8_t> next_board = board; // Temporary board to store the next state
 
+    for (int gen = 0; gen < generations; ++gen) {
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                // Count alive neighbors
+                int alive_neighbours = 0;
+                for (int dy = -1; dy <= 1; ++dy) {
+                    for (int dx = -1; dx <= 1; ++dx) {
+                        if (dx == 0 && dy == 0) continue; // Skip the current cell
 
-void printBoard(const vector<uint8_t>& board, int width, int height) {
-    for (int y = 0; y < height; ++y) {
-        for (int x = 0; x < width; ++x) {
-            cout << (board[y * width + x] ? 'x' : '.');
+                        // Wrap around edges (toroidal array)
+                        int nx = (x + dx + width) % width;
+                        int ny = (y + dy + height) % height;
+
+                        // Increment alive neighbor count
+                        alive_neighbours += board[ny * width + nx];
+                    }
+                }
+
+                // Calculate the index of the current cell
+                int idx = y * width + x;
+
+                // Apply Game of Life rules
+                if (board[idx] == 1) { // Cell is alive
+                    next_board[idx] = (alive_neighbours == 2 || alive_neighbours == 3) ? 1 : 0;
+                } else { // Cell is dead
+                    next_board[idx] = (alive_neighbours == 3) ? 1 : 0;
+                }
+            }
         }
-        cout << "\n";
-    }
-    cout << endl; // Add an extra line for clarity
-}
 
+        // Swap boards for the next generation
+        board.swap(next_board);
+    }
+}
 
 
 int main(int argc, char** argv) {
@@ -117,20 +142,11 @@ int main(int argc, char** argv) {
 
     board = loadFile(InputFile, width, height);
 
+    runGame(board, width, height, generations);
+
+
+
     saveFile(OutputFile, board, width, height);
-
-
-
-    //printBoard(board, width, height);
-
-
-    
-
-    
-
-
-
-
 
     return 0;
 }
