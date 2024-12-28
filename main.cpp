@@ -158,6 +158,10 @@ int main(int argc, char** argv) {
 
     board = loadFile(InputFile, width, height);
 
+    cout << "Initial Board:\n";
+    printBoard(board, width, height);
+
+
     runGame(board, width, height, generations);
 
 
