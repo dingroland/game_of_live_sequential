@@ -57,7 +57,7 @@ vector<uint8_t> loadFile(const string& inputFile, int& width, int& height) {
 
     // Read board state
     string line;
-    int row = 0;
+    int row = -1;
     while (getline(file, line)) {
         if (row >= height) break;
         for (int col = 0; col < width && col < line.size(); ++col) {
@@ -69,6 +69,26 @@ vector<uint8_t> loadFile(const string& inputFile, int& width, int& height) {
     file.close();
     return board;
 }
+
+
+void saveFile(const string& outputFile, const vector<uint8_t>& board, int width, int height) {
+    ofstream file(outputFile);
+    if (!file.is_open()) {
+        cerr << "Error: Unable to open file " << outputFile << "\n";
+        exit(EXIT_FAILURE);
+    }
+
+    file << width << "," << height << "\n";
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            file << (board[y * width + x] ? 'x' : '.');
+        }
+        file << "\n";
+    }
+
+    file.close();
+}
+
 
 
 
@@ -97,7 +117,11 @@ int main(int argc, char** argv) {
 
     board = loadFile(InputFile, width, height);
 
-    printBoard(board, width, height);
+    saveFile(OutputFile, board, width, height);
+
+
+
+    //printBoard(board, width, height);
 
 
     
