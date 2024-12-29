@@ -106,8 +106,6 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
 
     for (int gen = 0; gen < generations; ++gen) {
         vector<uint8_t> next_board = board; // Temporary board to store the next state
-        cout << "Generation " << gen << ":\n";
-        printBoard(board, width, height);
 
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
@@ -117,7 +115,7 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
                     for (int dx = -1; dx <= 1; ++dx) {
                         if (dx == 0 && dy == 0) continue; // Skip the current cell
 
-                        // Wrap around edges (toroidal array)
+                        // Wrap around edges 
                         int nx = (x + dx + width) % width;
                         int ny = (y + dy + height) % height;
 
@@ -128,7 +126,13 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
 
                 // Calculate the index of the current cell
                 int idx = y * width + x;
+                
+                // Optimized for performance: Reduces branching, minimizing CPU mispredictions
 
+                next_board[idx] = (alive_neighbours == 3) || (board[idx] == 1 && alive_neighbours == 2);
+                
+                
+                /*
                 // Apply Game of Life rules
                 if (board[idx] == 1) { 
                     if (alive_neighbours < 2 || alive_neighbours > 3) {
@@ -141,6 +145,10 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
                 } else { // Cell is dead
                     next_board[idx] = (alive_neighbours == 3) ? 1 : 0;
                 }
+                
+                
+                */
+                
             }
         }
 
@@ -160,20 +168,37 @@ int main(int argc, char** argv) {
 
     parseArguments(argc, argv, InputFile, OutputFile, generations, measure);
 
+    if (measure) {
+        Timing* timing = Timing::getInstance();
+        timing->startSetup();
+    }
+
     vector<uint8_t> board;
     int width, height;
 
     board = loadFile(InputFile, width, height);
-
-    cout << "Initial Board:\n";
-    printBoard(board, width, height);
-
-
+    if (measure) {
+        Timing* timing = Timing::getInstance();
+        timing->stopSetup();
+        timing->startComputation();
+    }
+    
     runGame(board, width, height, generations);
 
-
+    if (measure) {
+        Timing* timing = Timing::getInstance();
+        timing->stopComputation();
+        timing->startFinalization();
+    }
 
     saveFile(OutputFile, board, width, height);
+
+
+    if (measure) {
+        Timing* timing = Timing::getInstance();
+        timing->stopFinalization();
+        timing->print();
+    }
 
     return 0;
 }
