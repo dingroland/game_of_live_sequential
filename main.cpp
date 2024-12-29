@@ -102,9 +102,10 @@ void printBoard(const vector<uint8_t>& board, int width, int height) {
 
 
 void runGame(vector<uint8_t>& board, int width, int height, int generations) {
-    vector<uint8_t> next_board = board; // Temporary board to store the next state
+    
 
     for (int gen = 0; gen < generations; ++gen) {
+        vector<uint8_t> next_board = board; // Temporary board to store the next state
         cout << "Generation " << gen << ":\n";
         printBoard(board, width, height);
 
@@ -136,7 +137,7 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
                         else if (alive_neighbours == 2 || alive_neighbours == 3) {
                             next_board[idx] = 1;
                         }
-    
+
                 } else { // Cell is dead
                     next_board[idx] = (alive_neighbours == 3) ? 1 : 0;
                 }
