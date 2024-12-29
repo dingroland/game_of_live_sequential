@@ -129,8 +129,14 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
                 int idx = y * width + x;
 
                 // Apply Game of Life rules
-                if (board[idx] == 1) { // Cell is alive
-                    next_board[idx] = (alive_neighbours == 2 || alive_neighbours == 3) ? 1 : 0;
+                if (board[idx] == 1) { 
+                    if (alive_neighbours < 2 || alive_neighbours > 3) {
+                        next_board[idx] = 0;
+                        }
+                        else if (alive_neighbours == 2 || alive_neighbours == 3) {
+                            next_board[idx] = 1;
+                        }
+    
                 } else { // Cell is dead
                     next_board[idx] = (alive_neighbours == 3) ? 1 : 0;
                 }
