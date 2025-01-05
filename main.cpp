@@ -117,7 +117,7 @@ void runGameOMP(vector<uint8_t>& board, int width, int height, int generations, 
     omp_set_num_threads(threads);
 
     for (int gen = 0; gen < generations; ++gen) {
-        #pragma omp parallel for collapse(2) schedule(static)
+        #pragma omp parallel for collapse(2) schedule(dynamic)
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
                 int alive_neighbours = 0;
