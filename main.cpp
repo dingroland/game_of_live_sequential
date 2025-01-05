@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <unordered_map>
 #include "Timing.h"
 
 using namespace std;
@@ -109,7 +110,7 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
 }
 
 
-// Parallel Game of Life Logic using OpenMP
+// Parallel 
 #include <omp.h>
 void runGameOMP(vector<uint8_t>& board, int width, int height, int generations, int threads) {
     vector<uint8_t> next_board(width * height);
