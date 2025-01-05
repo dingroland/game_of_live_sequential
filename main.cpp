@@ -107,34 +107,68 @@ void runGame(vector<uint8_t>& board, int width, int height, int generations) {
         board.swap(next_board);
     }
 }
-int main(int argc, char** argv) {
 
+
+// Parallel Game of Life Logic using OpenMP
+#include <omp.h>
+void runGameOMP(vector<uint8_t>& board, int width, int height, int generations, int threads) {
+    vector<uint8_t> next_board(width * height);
+    omp_set_num_threads(threads);
+
+    for (int gen = 0; gen < generations; ++gen) {
+        #pragma omp parallel for collapse(2) schedule(static)
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                int alive_neighbours = 0;
+                for (int dy = -1; dy <= 1; ++dy) {
+                    for (int dx = -1; dx <= 1; ++dx) {
+                        if (dx == 0 && dy == 0) continue;
+                        int nx = (x + dx + width) % width;
+                        int ny = (y + dy + height) % height;
+                        alive_neighbours += board[ny * width + nx];
+                    }
+                }
+                int idx = y * width + x;
+                next_board[idx] = (alive_neighbours == 3) || (board[idx] == 1 && alive_neighbours == 2);
+            }
+        }
+        board.swap(next_board);
+    }
+}
+
+
+// Main Function
+int main(int argc, char** argv) {
     string inputFile, outputFile;
-    int generations;
+    int generations = 0;
     int threads = 1;
     bool measure = false;
     bool omp = false;
 
-
     parseArguments(argc, argv, inputFile, outputFile, generations, threads, measure, omp);
-
 
     if (measure) {
         Timing* timing = Timing::getInstance();
         timing->startSetup();
     }
 
-    vector<uint8_t> board;
     int width, height;
+    vector<uint8_t> board = loadFile(inputFile, width, height);
 
-    board = loadFile(inputFile, width, height);
     if (measure) {
         Timing* timing = Timing::getInstance();
         timing->stopSetup();
         timing->startComputation();
     }
-    
-    runGame(board, width, height, generations);
+
+    // Run either sequential or parallel based on the flag
+    if (omp) {
+        cout << "Running in Parallel Mode with " << threads << " threads.\n";
+        runGameOMP(board, width, height, generations, threads);
+    } else {
+        cout << "Running in Sequential Mode.\n";
+        runGame(board, width, height, generations);
+    }
 
     if (measure) {
         Timing* timing = Timing::getInstance();
@@ -143,7 +177,6 @@ int main(int argc, char** argv) {
     }
 
     saveFile(outputFile, board, width, height);
-
 
     if (measure) {
         Timing* timing = Timing::getInstance();
