@@ -11,63 +11,29 @@ using namespace std;
 int NUM_ARGS = 7;
 
 
+// Argument Parsing Function
 void parseArguments(int argc, char** argv, string& inputFile, string& outputFile, int& generations, int& threads, bool& measure, bool& omp) {
-    // Check if the number of arguments is correct
-    if (argc < NUM_ARGS) {
-        cerr << "Error: Insufficient arguments.\nUsage: --load <file> --save <file> --generations <n> [--measure] [--mode <seq|omp> --threads <n>]\n";
-        exit(EXIT_FAILURE);
+    unordered_map<string, string> args;
+    for (int i = 1; i < argc; i += 2) {
+        string key = argv[i];
+        if (i + 1 < argc)
+            args[key] = argv[i + 1];
+        else
+            args[key] = "";
     }
 
-    for (int i = 1; i < argc; i++) {
-        string arg = argv[i];
-        if (arg == "--mode" && i + 1 < argc) {
-            string mode = argv[++i];
-            if (mode == "omp") {
-                omp = true;
-            } else if (mode == "seq") {
-                omp = false;
-            } else {
-                cerr << "Error: Invalid mode \"" << mode << "\". Use \"seq\" or \"omp\".\n";
-                exit(EXIT_FAILURE);
-            }
-        } else if (arg == "--threads" && i + 1 < argc) {
-            if (omp) {  // Ensure threads are only set when in omp
-                threads = stoi(argv[++i]);
-                if (threads <= 0) {
-                    cerr << "Error: Invalid thread count \"" << threads << "\". Must be > 0.\n";
-                    exit(EXIT_FAILURE);
-                }
-            } else {
-                cerr << "Error: \"--threads\" option is only valid with \"--mode omp\".\n";
-                exit(EXIT_FAILURE);
-            }
-        } else if (arg == "--load" && i + 1 < argc) {
-            inputFile = argv[++i];
-        } else if (arg == "--save" && i + 1 < argc) {
-            outputFile = argv[++i];
-        } else if (arg == "--generations" && i + 1 < argc) {
-            generations = stoi(argv[++i]);
-        } else if (arg == "--measure") {
-            measure = true;
-        } else {
-            cerr << "Error: Invalid argument \"" << arg << "\".\n";
-            exit(EXIT_FAILURE);
-        }
-    }
+    if (args.find("--load") != args.end()) inputFile = args["--load"];
+    if (args.find("--save") != args.end()) outputFile = args["--save"];
+    if (args.find("--generations") != args.end()) generations = stoi(args["--generations"]);
+    if (args.find("--measure") != args.end()) measure = true;
+    if (args.find("--mode") != args.end() && args["--mode"] == "omp") omp = true;
+    if (args.find("--threads") != args.end() && omp) threads = stoi(args["--threads"]);
 
-    // Final argument validation
     if (inputFile.empty() || outputFile.empty() || generations <= 0) {
-        cerr << "Error: Invalid Arguments. Ensure Input File and Output File are provided, and Generations > 0.\n";
-        exit(EXIT_FAILURE);
-    }
-
-    if (omp && threads <= 0) {
-        cerr << "Error: Threads must be set and > 0 for OpenMP mode.\n";
+        cerr << "Error: Invalid arguments provided.\n";
         exit(EXIT_FAILURE);
     }
 }
-
-
 
 #include <iostream>
 #include <string>
