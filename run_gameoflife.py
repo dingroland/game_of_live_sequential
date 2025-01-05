@@ -52,8 +52,8 @@ def run_command(mode, input_file, save_file, csv_file, threads=None):
 # Run tests for grid sizes 1000 to 10000 with increments of 1000
 for size in range(1000, 10001, 1000):
     input_file = os.path.join(base_path, f"random{size}_in.gol")
-    save_file_seq = os.path.join(base_path, f"mai21mxxx_{size}_cpu_out.gol")
-    save_file_omp = os.path.join(base_path, f"mai21mxxx_{size}_openmp_out.gol")
+    save_file_seq = os.path.join(base_path, f"mai21m033_{size}_cpu_out.gol")
+    save_file_omp = os.path.join(base_path, f"mai21m033_{size}_openmp_out.gol")
 
     if not os.path.exists(input_file):
         print(f"Error: Input file '{input_file}' not found.")
@@ -61,6 +61,6 @@ for size in range(1000, 10001, 1000):
 
     # Run both sequential and OpenMP versions
     run_command("seq", input_file, save_file_seq, cpu_time_csv)
-    run_command("omp", input_file, save_file_omp, openmp_time_csv, threads=NUM_THREADS)
+    #run_command("omp", input_file, save_file_omp, openmp_time_csv, threads=NUM_THREADS)
 
 print("Benchmarking complete!")

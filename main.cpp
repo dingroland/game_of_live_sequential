@@ -36,7 +36,7 @@ void parseArguments(int argc, char** argv, string& inputFile, string& outputFile
 }
 
 
-// Load File Function
+// Load File 
 vector<uint8_t> loadFile(const string& inputFile, int& width, int& height) {
     ifstream file(inputFile);
     if (!file.is_open()) {
@@ -58,7 +58,7 @@ vector<uint8_t> loadFile(const string& inputFile, int& width, int& height) {
     return board;
 }
 
-// Save File Function
+// Save File 
 void saveFile(const string& outputFile, const vector<uint8_t>& board, int width, int height) {
     ofstream file(outputFile);
     if (!file.is_open()) {
@@ -117,7 +117,7 @@ void runGameOMP(vector<uint8_t>& board, int width, int height, int generations, 
     omp_set_num_threads(threads);
 
     for (int gen = 0; gen < generations; ++gen) {
-        #pragma omp parallel for collapse(2) schedule(dynamic)
+        #pragma omp parallel for collapse(2) schedule(static)
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
                 int alive_neighbours = 0;
@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
         timing->startComputation();
     }
 
-    // Run either sequential or parallel based on the flag
+    // Run either sequential or parallel based on flag
     if (omp) {
         cout << "Running in Parallel Mode with " << threads << " threads.\n";
         runGameOMP(board, width, height, generations, threads);
