@@ -84,63 +84,29 @@ void printBoard(const vector<uint8_t>& board, int width, int height) {
 }
 
 
+// Sequential Game of Life Logic
 void runGame(vector<uint8_t>& board, int width, int height, int generations) {
-    
+    vector<uint8_t> next_board(width * height);
 
     for (int gen = 0; gen < generations; ++gen) {
-        vector<uint8_t> next_board = board; // Temporary board to store the next state
-
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {
-                // Count alive neighbors
                 int alive_neighbours = 0;
                 for (int dy = -1; dy <= 1; ++dy) {
                     for (int dx = -1; dx <= 1; ++dx) {
-                        if (dx == 0 && dy == 0) continue; // Skip the current cell
-
-                        // Wrap around edges 
+                        if (dx == 0 && dy == 0) continue;
                         int nx = (x + dx + width) % width;
                         int ny = (y + dy + height) % height;
-
-                        // Increment alive neighbor count
                         alive_neighbours += board[ny * width + nx];
                     }
                 }
-
-                // Calculate the index of the current cell
                 int idx = y * width + x;
-                
-                // Optimized for performance: Reduces branching, minimizing CPU mispredictions
-
                 next_board[idx] = (alive_neighbours == 3) || (board[idx] == 1 && alive_neighbours == 2);
-                
-                
-                /*
-                // Apply Game of Life rules
-                if (board[idx] == 1) { 
-                    if (alive_neighbours < 2 || alive_neighbours > 3) {
-                        next_board[idx] = 0;
-                        }
-                        else if (alive_neighbours == 2 || alive_neighbours == 3) {
-                            next_board[idx] = 1;
-                        }
-
-                } else { // Cell is dead
-                    next_board[idx] = (alive_neighbours == 3) ? 1 : 0;
-                }
-                
-                
-                */
-                
             }
         }
-
-        // Swap boards for the next generation
         board.swap(next_board);
     }
 }
-
-
 int main(int argc, char** argv) {
 
     string inputFile, outputFile;
