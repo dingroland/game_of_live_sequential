@@ -1,9 +1,11 @@
 import subprocess
 import os
 
+NUM_THREADS = 8
+
 # Define paths and parameters
-exe_path = r".\GameOfLife.exe"
-base_path = r"C:\Users\Carlos Tichy\Documents\MAI\1stSem\Advanced_Programming\step1000_in_250generations"
+exe_path = r"./game_of_life"
+base_path = r"./step1000_in_250generations/"
 
 # Output CSV files for times
 cpu_time_csv = "ai24m033_cpu_time.csv"
@@ -14,14 +16,22 @@ open(cpu_time_csv, "w").close()
 open(openmp_time_csv, "w").close()
 
 
-# Function to run the command and store results directly to a CSV
-def run_command(mode, input_file, save_file, csv_file):
+def run_command(mode, input_file, save_file, csv_file, threads=None):
     print(f"Running in {mode} mode for file {input_file}...")
+
+    # Ensure OpenMP uses the correct thread count via environment variable
+    if mode == "omp" and threads:
+        os.environ["OMP_NUM_THREADS"] = str(threads)
+
     command = f'{exe_path} --load "{input_file}" --save "{save_file}" --generations 250 --measure --mode {mode}'
+    
+    # Add threads flag only for OpenMP mode if supported in your C++ code
+    if mode == "omp" and threads:
+        command += f" --threads {threads}"
+
     try:
         result = subprocess.run(command, capture_output=True, text=True, shell=True)
         if result.returncode == 0:
-            # Write raw output times directly to the CSV file
             with open(csv_file, "a") as file:
                 file.write(result.stdout.strip() + "\n")
             print(f"Completed {mode} mode for file {input_file}.")
@@ -30,25 +40,18 @@ def run_command(mode, input_file, save_file, csv_file):
     except Exception as e:
         print(f"Exception in {mode} mode for file {input_file}: {e}")
 
-
-# Loop for file sizes from 1000 to 10000 in increments of 1000
 for size in range(1000, 10001, 1000):
     input_filename = f"random{size}_in.gol"
     input_file = os.path.join(base_path, input_filename)
-
-    # Output file names
     save_file_seq = os.path.join(base_path, f"ai24m033_{size}_cpu_out.gol")
     save_file_par = os.path.join(base_path, f"ai24m033_{size}_openmp_out.gol")
 
-    # Check if the input file exists
     if not os.path.exists(input_file):
         print(f"Error: The input file '{input_file}' does not exist. Skipping...")
         continue
 
-    # Run sequential mode and append times to the CPU CSV
+    # Run both sequential and parallel tests
     run_command("seq", input_file, save_file_seq, cpu_time_csv)
-
-    # Run parallel mode and append times to the OpenMP CSV
-    run_command("omp", input_file, save_file_par, openmp_time_csv)
+    run_command("omp", input_file, save_file_par, openmp_time_csv, threads=NUM_THREADS)
 
 print("All executions completed.")
