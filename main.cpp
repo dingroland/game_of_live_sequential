@@ -4,11 +4,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include "Timing.h"
 
 using namespace std;
-
-int NUM_ARGS = 7;
 
 
 // Argument Parsing Function
@@ -35,89 +34,44 @@ void parseArguments(int argc, char** argv, string& inputFile, string& outputFile
     }
 }
 
-#include <iostream>
-#include <string>
 
-void printArguments(int argc, char** argv) {
-    std::cout << "Received Arguments:\n";
-    for (int i = 0; i < argc; i++) {
-        std::cout << "  argv[" << i << "]: " << argv[i] << "\n";
-    }
-    std::cout << "-----------------------\n";
-}
-
-void validateArguments(const std::string& inputFile, const std::string& outputFile, int generations, int threads, bool omp) {
-    std::cout << "Validated Parameters:\n";
-    std::cout << "  Input File: " << (inputFile.empty() ? "Not Provided" : inputFile) << "\n";
-    std::cout << "  Output File: " << (outputFile.empty() ? "Not Provided" : outputFile) << "\n";
-    std::cout << "  Generations: " << (generations > 0 ? std::to_string(generations) : "Invalid") << "\n";
-
-    if (omp) {
-        std::cout << "  Mode: Parallel (OpenMP)\n";
-        std::cout << "  Threads: " << (threads > 0 ? std::to_string(threads) : "Invalid") << "\n";
-    } else {
-        std::cout << "  Mode: Sequential\n";
-    }
-
-    if (inputFile.empty() || outputFile.empty() || generations <= 0 || (omp && threads <= 0)) {
-        std::cerr << "Error: Invalid arguments detected.\n";
-        exit(EXIT_FAILURE);
-    }
-
-    std::cout << "-----------------------\n";
-}
-
-
-
-
+// Load File Function
 vector<uint8_t> loadFile(const string& inputFile, int& width, int& height) {
     ifstream file(inputFile);
     if (!file.is_open()) {
-        cerr << "Error: Unable to open file " << inputFile << "\n";
+        cerr << "Error: Could not open file " << inputFile << "\n";
         exit(EXIT_FAILURE);
     }
-
-    // Read board dimensions
     file >> width;
-    file.ignore(1); // Skip comma
+    file.ignore(1);
     file >> height;
 
-    vector<uint8_t> board(width * height, 0);
-
-    // Read board state
-    string line;
-    int row = -1; // Start at -1 to skip the dimensions line
-    while (getline(file, line)) {
-        if (row >= height) break;
-        for (int col = 0; col < width && col < line.size(); ++col) {
-            board[row * width + col] = (line[col] == 'x');
+    vector<uint8_t> board(width * height);
+    for (int y = 0; y < height; ++y) {
+        string line;
+        file >> line;
+        for (int x = 0; x < width; ++x) {
+            board[y * width + x] = (line[x] == 'x');
         }
-        row++;
     }
-
-    file.close();
     return board;
 }
 
-
+// Save File Function
 void saveFile(const string& outputFile, const vector<uint8_t>& board, int width, int height) {
     ofstream file(outputFile);
     if (!file.is_open()) {
         cerr << "Error: Unable to open file " << outputFile << "\n";
         exit(EXIT_FAILURE);
     }
-
     file << width << "," << height << "\n";
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            file << (board[y * width + x] ? 'x' : '.');
+            file.put(board[y * width + x] ? 'x' : '.');
         }
-        file << "\n";
+        file.put('\n');
     }
-
-    file.close();
 }
-
 
 void printBoard(const vector<uint8_t>& board, int width, int height) {
     for (int y = 0; y < height; ++y) {
@@ -196,12 +150,8 @@ int main(int argc, char** argv) {
     bool omp = false;
 
 
-    printArguments(argc, argv);
-
     parseArguments(argc, argv, inputFile, outputFile, generations, threads, measure, omp);
 
-
-    validateArguments(inputFile, outputFile, generations, threads, omp);
 
     if (measure) {
         Timing* timing = Timing::getInstance();
